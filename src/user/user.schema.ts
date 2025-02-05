@@ -33,6 +33,6 @@ export interface User extends Document {
 }
 
 
-const User = mongoose.model('User', UserSchema);
+
 
 export const UserModel: Model<User> = model<User>('User', UserSchema);
