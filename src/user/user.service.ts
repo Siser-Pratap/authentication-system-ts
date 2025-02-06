@@ -80,4 +80,22 @@ export class UserService {
     await admin.save();
     return { message: 'Admin added successfully' };
   }
+
+  async assignPermissions(adminId: string, userId: string, permissions: string[]) {
+    const admin = await this.userModel.findById(adminId);
+    
+    if (!admin || admin.role !== 'admin') {
+      throw new HttpException('Only admins can assign permissions.', HttpStatus.UNAUTHORIZED);
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    user.permissions = permissions;
+    await user.save();
+
+    return { message: 'Permissions assigned successfully', user };
+  }
 }

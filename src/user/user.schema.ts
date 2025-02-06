@@ -8,6 +8,7 @@ export const UserSchema = new Schema(
       email: { type: String, required: true, unique: true },
       password: { type: String, required: true },
       role: { type: String, enum: ['superadmin', 'admin', 'user'], required: true },
+      permissions:[{type:String}]
     },
     { timestamps: true },
 );
@@ -25,6 +26,7 @@ export interface User extends Document {
   password: string;
   role: string;
   comparePassword(password: string): Promise<boolean>;
+  permissions:string[];
 }
 
 
