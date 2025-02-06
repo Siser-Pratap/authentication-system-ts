@@ -20,6 +20,8 @@ UserSchema.methods.comparePassword = async function (password: string): Promise<
 
 
 
+
+
 export interface User extends Document {
   username: string;
   email: string;
