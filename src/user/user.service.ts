@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './user.schema';
 import * as jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UserService {
@@ -23,7 +23,9 @@ export class UserService {
       throw new HttpException('User already exists.', HttpStatus.BAD_REQUEST);
     }
 
-    const user = new this.userModel({ username, email, password, role });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new this.userModel({ username, email, password:hashedPassword, role });
     await user.save();
     return { message: 'User registered successfully' };
   }
@@ -31,13 +33,29 @@ export class UserService {
   // Login: Verify user role and generate JWT
   async login(email: string, password: string) {
     const user = await this.userModel.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
-      throw new HttpException('Invalid Credentials', HttpStatus.UNAUTHORIZED);
+    
+
+    if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
+    
+    const isMatch = bcrypt.compare(user.password, password);
+
+    
+    if (!isMatch) {
+        throw new HttpException('Invalid Credentials', HttpStatus.UNAUTHORIZED);
+    }
+
+    console.log(isMatch);
     const token = jwt.sign({id:user._id, role:user.role}, process.env.JWT_SECRET || 'defaultSecretKey', {expiresIn:'1h'});
 
     return { token, role: user.role, id:user._id };
+  }
+
+
+  async findUserById(userId:string){
+    return await this.userModel.findById(userId).select('-password');
   }
 
   // Add Admin (Only Super Admin)
